@@ -1,50 +1,66 @@
-﻿using System.ComponentModel;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
+using DotnetPing.Config;
+using DotnetPing.Http;
+using DotnetPing.Ping;
+using Microsoft.Extensions.DependencyInjection;
 using Spectre.Console.Cli;
 
 namespace DotnetPing;
 
-internal sealed class AppCommand : Command<AppCommand.Settings>
+public sealed class AppCommand : AsyncCommand<AppSettings>
 {
-    public override int Execute(
-        [NotNull] CommandContext context,
-        [NotNull] Settings settings)
+    public const int COMMAND_LINE_SUCCESS = 0;
+
+    public const int COMMAND_LINE_ERROR = 1;
+
+    public const int COMMAND_LINE_USAGE_ERROR = 64;
+
+    public override async Task<int> ExecuteAsync(
+        [NotNull] CommandContext commandContext,
+        [NotNull] AppSettings settings)
     {
-        // TODO: Write code
+        var services = GetServices(settings);
 
-        OnEnd();
+        var builder = services.GetRequiredService<PingContextBuilder>();
 
-        return 0;
-    }
+        var context = await builder.Build(settings);
 
-    private static void OnEnd()
-    {
-        if (Debugger.IsAttached)
+        if (!context.Urls.Any())
         {
-            Console.WriteLine();
-            Console.WriteLine("Press any key to close application...");
-            Console.ReadKey(intercept: true);
+            return COMMAND_LINE_USAGE_ERROR;
         }
 
-        Console.ResetColor();
+        var service = services.GetRequiredService<PingService>();
+
+        var results = await service.Run(context);
+
+        var isAllSuccess = results.All(x => x.IsSuccess);
+
+        if (!isAllSuccess)
+        {
+            return COMMAND_LINE_ERROR;
+        }
+
+        return COMMAND_LINE_SUCCESS;
     }
-    public sealed class Settings : CommandSettings
+
+    private static ServiceProvider GetServices(AppSettings settings)
     {
-        [Description(AppCommandConfig.UrlsDescription)]
-        [CommandArgument(0, "[urls]")]
-        public string[] Urls { get; init; } = [];
+        var services = new ServiceCollection();
 
-        [Description(AppCommandConfig.BackoffDescription)]
-        [CommandOption("-b|--backoff")]
-        public int Backoff { get; init; } = 0;
+        services.ConfigureHttpClientDefaults(config =>
+        {
+            config.ConfigureHttpClient(configClient =>
+            {
+                configClient.Timeout = TimeSpan.FromMilliseconds(settings.Timeout);
+            });
+        });
 
-        [Description(AppCommandConfig.BackoffMaxDescription)]
-        [CommandOption("-m|--backoff-max")]
-        public int BackoffMax { get; init; } = 0;
+        services.AddSingleton<PingContextBuilder>();
+        services.AddSingleton<PingService>();
+        services.AddSingleton<IConfigReader, FileConfigReader>();
+        services.AddSingleton<IHttpRequester, HttpRequester>();
 
-        [Description(AppCommandConfig.ConfigDescription)]
-        [CommandOption("-c|--config")]
-        public string Config { get; init; } = string.Empty;
+        return services.BuildServiceProvider();
     }
 }

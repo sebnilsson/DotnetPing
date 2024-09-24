@@ -18,23 +18,7 @@ dotnet tool install -g dotnet-ping
 ## Usage
 
 ```
-USAGE:
-    dotnet ping [urls] [OPTIONS]
-
-EXAMPLES:
-    dotnet ping
-    dotnet ping https://dot.net
-    dotnet ping https://dot.net https://www.nuget.org -b 1000 2000
-    dotnet ping -c ping.json
-
-ARGUMENTS:
-    [urls]              The URLs to ping. If not specified, the URLs are read from the ping.json file.
-
-OPTIONS:
-    -h, --help          Prints help information.
-    -b, --backoff       Sets the backoff time in milliseconds. Default: 1000ms.
-    -m, --backoff-max   Sets the max backoff time in milliseconds. Uses the backoff time as start value and this value as end value for a random number.
-    -c, --config        The path to the ping.json file. Default: /ping.json.
+TODO: Copy paste from `dotnet ping --help`
 ```
 
 ### Examples

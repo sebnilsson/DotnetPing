@@ -1,4 +1,5 @@
-﻿using DotnetPing;
+﻿using System.Diagnostics;
+using DotnetPing;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
@@ -18,6 +19,13 @@ catch (Exception ex)
 }
 finally
 {
+    if (Debugger.IsAttached)
+    {
+        AnsiConsole.WriteLine();
+        AnsiConsole.WriteLine("Press any key to close application...");
+        Console.ReadKey(intercept: true);
+    }
+
     Console.ResetColor();
 }
 
@@ -25,11 +33,10 @@ static void AppConfig(IConfigurator config)
 {
     config.SetApplicationName("dotnet-guid");
 
-    // TODO: Add examples
-    //config.AddExample(["5", "-f", "N"]);
-    //config.AddExample(["-f", "X", "-u"]);
-    //config.AddExample(["-f", "B64"]);
-    //config.AddExample(["-e"]);
+    // TODO: Update
+    //config.AddExample(["https://dot.net"]);
+    //config.AddExample(["https://dot.net https://www.nuget.org", "-b", "1000", "-m", "2000"]);
+    //config.AddExample(["-c", "ping.json"]);
 
 #if DEBUG
     config.PropagateExceptions();

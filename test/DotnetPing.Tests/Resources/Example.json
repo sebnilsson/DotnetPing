@@ -1,0 +1,34 @@
+{
+    "urls": [
+        {
+            "url": "dot.com",
+            "timeout": 15000,
+            "sleep": 1000,
+            "expect": [ 200, 201 ]
+        },
+        {
+            "url": "http://bing.com",
+            "timeout": 10000,
+            "sleep": 2000,
+            "expect": [ 200, 301, 302 ]
+        },
+        {
+            "timeout": 10000,
+            "sleep": 5000,
+            "expect": [ 200, 201 ]
+        }
+    ],
+    "groups": [
+        {
+            "timeout": 20000,
+            "sleep": 2500,
+            "expect": [ 200, 201 ],
+            "urls": [ "yahoo.com", "google.com" ]
+        },
+        {
+            "timeout": 50000,
+            "sleep": 5500,
+            "expect": [ 200, 201 ]
+        }
+    ]
+}

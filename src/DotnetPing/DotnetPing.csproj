@@ -1,13 +1,41 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <TargetFrameworks>net8.0;net7.0</TargetFrameworks>
+    <IsPackable>true</IsPackable>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
+
+    <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+
+    <Title>Dotnet Ping</Title>
+    <AssemblyName>dotnet-ping</AssemblyName>
+    <PackageId>dotnet-ping</PackageId>
+    <PackageVersion>$(Version)</PackageVersion>
+    <Version>1.0.0</Version>
+
+    <ToolCommandName>dotnet-ping</ToolCommandName>
+    <PackAsTool>True</PackAsTool>
+    <PackageOutputPath>./nupkg</PackageOutputPath>
+
+    <PackageProjectUrl>https://github.com/sebnilsson/DotnetPing</PackageProjectUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+
+    <RepositoryUrl>$(PackageProjectUrl).git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+
+    <Authors>Sebastian Nilsson</Authors>
+    <Description>.NET Tool for pinging URLs</Description>
+    <Summary>.NET Tool for pinging URLs</Summary>
+
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
     <PackageReference Include="Spectre.Console.Cli" Version="0.49.1" />
   </ItemGroup>
 

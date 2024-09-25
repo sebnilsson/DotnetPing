@@ -10,7 +10,7 @@ public record PingResult
         Exception = result.Exception;
         HttpStatusCode = result.HttpStatusCode;
         IsTimeout = result.IsTimeout;
-        ExpectedStatusCodes = url.ExpectedStatusCodes;
+        ExpectedStatusCodes = url.Config.ExpectedStatusCodes;
         Url = url.Url;
     }
 

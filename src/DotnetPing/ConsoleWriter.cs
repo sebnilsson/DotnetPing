@@ -46,7 +46,8 @@ public static class ConsoleWriter
         }
 
         var text = new Text(
-            $"{url.Method}: {url.Url} (Timeout: {url.Timeout}, Sleep: {url.Sleep}, Expect: {GetJson(url.ExpectedStatusCodes)})",
+            $"{url.Method}: {url.Url} (Timeout: {url.Config.Timeout}, Sleep: {url.Config.Sleep}, " +
+            $"Expect: {GetJson(url.Config.ExpectedStatusCodes)})",
             new Style(Color.Yellow));
 
         lock (AnsiConsole.Console)
@@ -63,7 +64,9 @@ public static class ConsoleWriter
             return;
         }
 
-        var text = new Markup($"[green]{result.HttpStatusCode}: {result.Url}{(result.IsTimeout ? " (Timeout)" : null)}[/]");
+        var text = new Text(
+            $"{result.HttpStatusCode}: {result.Url}{(result.IsTimeout ? " (Timeout)" : null)}",
+            new Style(Color.Green));
 
         lock (AnsiConsole.Console)
         {

@@ -1,0 +1,11 @@
+{
+    "groups": [
+        {
+            "timeout": 5000,
+            "sleep": 5500,
+            "baseUrl": "https://www.no-ga.com/eu",
+            "expect": [ 200, 201 ],
+            "urls": [ "/outdoor", "/kitchen" ]
+        }
+    ]
+}

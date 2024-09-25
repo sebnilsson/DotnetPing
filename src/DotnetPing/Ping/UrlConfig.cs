@@ -1,14 +1,28 @@
-﻿namespace DotnetPing.Ping;
+﻿using DotnetPing.Http;
 
-public record UrlConfig : Config
+namespace DotnetPing.Ping;
+
+public record UrlConfig
 {
     public UrlConfig(string url, Config config)
-        : base(sleep: config.Sleep, timeout: config.Timeout, expectedStatusCodes: config.ExpectedStatusCodes)
+        : this(url, AppSettings.DefaultMethod, config)
     {
-        Url = EnsureUrl(url, config);
     }
 
-    public bool IsValid => !string.IsNullOrEmpty(Url);
+    public UrlConfig(string url, string method, Config config)
+    {
+        Url = EnsureUrl(url, config);
+
+        Config = config;
+
+        Method = EnsureMethod(method);
+    }
+
+    public Config Config { get; }
+
+    public bool IsValidUrl => !string.IsNullOrEmpty(Url);
+
+    public string Method { get; init; }
 
     public string Url { get; init; } = string.Empty;
 
@@ -33,5 +47,10 @@ public record UrlConfig : Config
         var urlResult = $"https://{url}";
 
         return Uri.IsWellFormedUriString(urlResult, UriKind.Absolute) ? urlResult : string.Empty;
+    }
+
+    private static string EnsureMethod(string? method)
+    {
+        return HttpMethodResolver.Get(method).ToString();
     }
 }

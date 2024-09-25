@@ -8,15 +8,28 @@ public record FileConfigJson
 
     public GroupJson[] Groups { get; init; } = [];
 
-    public record UrlJson : Config
+    public class UrlJson : JsonBase
     {
         public string Url { get; init; } = string.Empty;
     }
 
-    public record GroupJson : Config
+    public class GroupJson : JsonBase
     {
         public string[] Urls { get; init; } = [];
-    };
+    }
+
+    public abstract class JsonBase
+    {
+        public string BaseUrl { get; init; } = string.Empty;
+
+        public uint[] Expect { get; init; } = [];
+
+        public string Method { get; init; } = string.Empty;
+
+        public uint Sleep { get; init; }
+
+        public uint Timeout { get; init; }
+    }
 
     public static FileConfigJson Empty => new();
 
@@ -24,15 +37,26 @@ public record FileConfigJson
     {
         foreach (var url in Urls ?? [])
         {
-            yield return new UrlConfig(url.Url, url);
+            var config = GetConfig(url);
+            yield return new UrlConfig(url.Url, config);
         }
 
         foreach (var group in Groups ?? [])
         {
             foreach (var url in group.Urls ?? [])
             {
-                yield return new UrlConfig(url, group);
+                var config = GetConfig(group);
+                yield return new UrlConfig(url, config);
             }
         }
+    }
+
+    private static Config GetConfig(JsonBase jsonBase)
+    {
+        return new(
+            jsonBase.BaseUrl,
+            jsonBase.Sleep,
+            jsonBase.Timeout,
+            jsonBase.Expect);
     }
 }

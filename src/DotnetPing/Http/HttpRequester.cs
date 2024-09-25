@@ -11,7 +11,7 @@ public class HttpRequester(IHttpClientFactory httpClientFactory) : IHttpRequeste
     public async Task<HttpResult> Get(UrlConfig url, PingContext context)
     {
         var client = httpClientFactory.CreateClient();
-        client.Timeout = TimeSpan.FromMilliseconds(url.Timeout);
+        client.Timeout = TimeSpan.FromMilliseconds(url.Config.Timeout);
 
         var method = HttpMethodResolver.Get(url.Method);
 

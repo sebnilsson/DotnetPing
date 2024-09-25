@@ -11,7 +11,7 @@ public class UrlConfigTest
     public void BaseUrl_ReturnsFullUrl(string baseUrl, string url, string expected)
     {
         // Arrange
-        var config = new Config { BaseUrl = baseUrl };
+        var config = new Config(baseUrl: baseUrl);
 
         // Act
         var urlConfig = new UrlConfig(url, config);

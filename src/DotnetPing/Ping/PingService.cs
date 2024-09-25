@@ -41,7 +41,7 @@ public class PingService(PingContextBuilder pingContextBuilder, IHttpRequester h
 
             if (url != lastUrl)
             {
-                await Task.Delay((int)url.Sleep);
+                await Task.Delay((int)url.Config.Sleep);
             }
         }
 
@@ -54,7 +54,7 @@ public class PingService(PingContextBuilder pingContextBuilder, IHttpRequester h
     {
         var result = await httpRequester.Get(url, context);
 
-        var isSuccess = result.HttpStatusCode > 0 && url.ExpectedStatusCodes.Contains(result.HttpStatusCode);
+        var isSuccess = result.HttpStatusCode > 0 && url.Config.ExpectedStatusCodes.Contains(result.HttpStatusCode);
 
         return new PingResult(isSuccess, result, url);
     }

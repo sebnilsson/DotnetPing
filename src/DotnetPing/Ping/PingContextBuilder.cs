@@ -28,32 +28,20 @@ public class PingContextBuilder(IConfigReader configReader)
 
     private static string GetConfigFilePath(AppSettings settings)
     {
-        return Path.IsPathFullyQualified(settings.Config)
-            ? settings.Config
-            : Path.Combine(AppContext.BaseDirectory, settings.Config);
+        if (Path.IsPathFullyQualified(settings.Config))
+        {
+            return settings.Config;
+        }
+
+        string path = !string.IsNullOrWhiteSpace(settings.Config) ? settings.Config : AppSettings.DefaultConfig;
+
+        return Path.Combine(AppContext.BaseDirectory, path);
     }
 
     private static UrlConfig GetUrlConfig(string url, AppSettings settings)
     {
-        var sleep = GetSleep(settings);
-
         var config = settings.ToConfig();
 
-        return new UrlConfig(url, config)
-        {
-            Sleep = sleep,
-            Timeout = settings.Timeout,
-            ExpectedStatusCodes = settings.Expect
-        };
-    }
-
-    private static uint GetSleep(AppSettings settings)
-    {
-        var randomSleepMin = (int)settings.Sleep.ElementAtOrDefault(0);
-        var randomSleepMax = (int)settings.Sleep.ElementAtOrDefault(1);
-
-        randomSleepMin = randomSleepMin > 0 ? randomSleepMin : (int)AppSettings.DefaultSleep;
-
-        return (uint)(randomSleepMax > 0 ? Random.Shared.Next(randomSleepMin, randomSleepMax) : randomSleepMin);
+        return new UrlConfig(url, config);
     }
 }

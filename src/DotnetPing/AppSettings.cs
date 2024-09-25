@@ -9,6 +9,10 @@ public class AppSettings : CommandSettings
 {
     public static readonly uint[] DefaultExpect = [(uint)HttpStatusCode.OK];
 
+    public const string DefaultMethod = "GET";
+
+    public const string DefaultConfig = "ping.json";
+
     public const uint DefaultSleep = 1_000;
 
     public const uint DefaultTimeout = 15_000;
@@ -35,7 +39,7 @@ public class AppSettings : CommandSettings
 
     [Description(AppSettingsConfig.MethodDescription)]
     [CommandOption("-X|--request")]
-    public string Method { get; init; } = "GET";
+    public string Method { get; init; } = DefaultMethod;
 
     [Description(AppSettingsConfig.MinimalDescription)]
     [CommandOption("-m|--minimal")]
@@ -51,18 +55,29 @@ public class AppSettings : CommandSettings
 
     public Config ToConfig()
     {
-        return new Config
-        {
-            BaseUrl = BaseUrl,
-            ExpectedStatusCodes = Expect,
-            Timeout = Timeout
-        };
+        var sleep = GetSleep();
+
+        return new Config(
+            baseUrl: BaseUrl,
+            sleep: sleep,
+            timeout: Timeout,
+            expectedStatusCodes: Expect);
+    }
+
+    private uint GetSleep()
+    {
+        var randomSleepMin = (int)Sleep.ElementAtOrDefault(0);
+        var randomSleepMax = (int)Sleep.ElementAtOrDefault(1);
+
+        randomSleepMin = randomSleepMin > 0 ? randomSleepMin : (int)DefaultSleep;
+
+        return (uint)(randomSleepMax > 0 ? Random.Shared.Next(randomSleepMin, randomSleepMax) : randomSleepMin);
     }
 }
 
 internal static class AppSettingsConfig
 {
-    public const string ConfigDescription = "The path to the ping.json file.";
+    public const string ConfigDescription = "The path to the JSON config file.";
 
     public const string ExpectDescription = "Sets the expected status code of requests. Default: 200.";
 
@@ -76,5 +91,5 @@ internal static class AppSettingsConfig
 
     public const string TimeoutDescription = "Sets the timeout for requests in milliseconds. Default: 15000ms. If two values are provided, a random number between the two numbers will be generated for each request.";
 
-    public const string UrlsDescription = "The URLs to ping. If not specified, the URLs are read from the ping.json file.";
+    public const string UrlsDescription = "The URLs to ping. If not specified, the URLs are read from the JSON config file.";
 }

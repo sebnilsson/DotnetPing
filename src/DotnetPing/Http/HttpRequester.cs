@@ -4,37 +4,46 @@ namespace DotnetPing.Http;
 
 public class HttpRequester(IHttpClientFactory httpClientFactory) : IHttpRequester
 {
-    public async Task<HttpRequestResult> Get(UrlConfig url, PingContext context)
+    public event EventHandler<UrlConfig>? OnResultStarted;
+
+    public event EventHandler<HttpResult>? OnResultCompleted;
+
+    public async Task<HttpResult> Get(UrlConfig url, PingContext context)
     {
         var client = httpClientFactory.CreateClient();
         client.Timeout = TimeSpan.FromMilliseconds(url.Timeout);
 
-        var method = GetHttpMethod(url);
+        var method = HttpMethodResolver.Get(url.Method);
 
-        var request = new HttpRequestMessage { Method = HttpMethod.Get, RequestUri = new Uri(url.Url) };
+        var request = new HttpRequestMessage { Method = method, RequestUri = new Uri(url.Url) };
 
+        OnResultStarted?.Invoke(this, url);
+
+        var result = await GetResult(client, request, url);
+
+        OnResultCompleted?.Invoke(this, result);
+
+        return result;
+    }
+
+    private static async Task<HttpResult> GetResult(HttpClient client, HttpRequestMessage request, UrlConfig url)
+    {
         try
         {
             var response = await client.SendAsync(request);
 
-            return new HttpRequestResult((uint)response.StatusCode);
+            return new HttpResult(url.Url, (uint)response.StatusCode);
         }
         catch (HttpRequestException ex)
         {
             var statusCode = ex.StatusCode != null ? (uint)ex.StatusCode.Value : 0;
 
-            return new HttpRequestResult(statusCode, IsTimeout: false, ex);
+            return new HttpResult(url.Url, statusCode, IsTimeout: false, ex);
 
         }
         catch (Exception ex)
         {
-            return new HttpRequestResult(0, IsTimeout: true, ex);
+            return new HttpResult(url.Url, 0, IsTimeout: true, ex);
         }
-    }
-
-    private static HttpMethod GetHttpMethod(UrlConfig url)
-    {
-        // TODO: Extend method to support more than just GET
-        return HttpMethod.Get;
     }
 }

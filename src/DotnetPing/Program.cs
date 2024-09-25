@@ -15,7 +15,7 @@ try
 catch (Exception ex)
 {
     AnsiConsole.WriteException(ex, ExceptionFormats.ShortenEverything);
-    return -99;
+    return CommandLineExitCode.UnhandledException;
 }
 finally
 {

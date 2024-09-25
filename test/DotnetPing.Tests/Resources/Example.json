@@ -4,13 +4,20 @@
             "url": "dot.com",
             "timeout": 15000,
             "sleep": 1000,
-            "expect": [ 200, 201 ]
+            "expect": [ 200, 201, 403 ]
         },
         {
             "url": "http://bing.com",
             "timeout": 10000,
             "sleep": 2000,
             "expect": [ 200, 301, 302 ]
+        },
+        {
+            "url": "https://askjeeves.com",
+            "method": "DELETE",
+            "timeout": 5000,
+            "sleep": 2000,
+            "expect": [ 403, 405 ]
         },
         {
             "timeout": 10000,

@@ -2,9 +2,28 @@
 
 namespace DotnetPing.Ping;
 
-public class PingService(IHttpRequester httpRequester)
+public class PingService(PingContextBuilder pingContextBuilder, IHttpRequester httpRequester)
 {
-    public async Task<PingResult[]> Run(PingContext context)
+    public async Task<PingResult[]> Run(AppSettings settings)
+    {
+        var context = await pingContextBuilder.Build(settings);
+
+        pingContextBuilder.OnConfigReaderError +=
+            (sender, filePath) => ConsoleWriter.WriteOnConfigReaderError(filePath, settings);
+
+        ConsoleWriter.WriteContext(context);
+
+        httpRequester.OnResultStarted += (sender, url) => ConsoleWriter.WriteOnResultStarted(url, context);
+        httpRequester.OnResultCompleted += (sender, result) => ConsoleWriter.WriteOnResultCompleted(result, context);
+
+        var results = await GetResults(context);
+
+        ConsoleWriter.WriteResults(results, context);
+
+        return results;
+    }
+
+    private async Task<PingResult[]> GetResults(PingContext context)
     {
         if (context.Urls.Length == 0)
         {

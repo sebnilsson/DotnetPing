@@ -4,7 +4,7 @@ namespace DotnetPing.Ping;
 
 public record PingResult
 {
-    public PingResult(bool isSuccess, HttpRequestResult result, UrlConfig url)
+    public PingResult(bool isSuccess, HttpResult result, UrlConfig url)
     {
         IsSuccess = isSuccess;
         Exception = result.Exception;

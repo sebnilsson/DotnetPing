@@ -1,10 +1,11 @@
 ﻿using System.Text.Json;
-using Spectre.Console;
 
 namespace DotnetPing.Configuration;
 
 public class FileConfigReader : IConfigReader
 {
+    public event EventHandler<string>? OnError;
+
     private static readonly JsonSerializerOptions s_jsonSerializerOptions = new()
     {
         PropertyNameCaseInsensitive = true,
@@ -22,7 +23,7 @@ public class FileConfigReader : IConfigReader
         {
             if (!useMinimal)
             {
-                AnsiConsole.WriteLine($"Error reading config file at path '{filePath}'.");
+                OnError?.Invoke(this, filePath);
             }
             return FileConfigJson.Empty;
         }

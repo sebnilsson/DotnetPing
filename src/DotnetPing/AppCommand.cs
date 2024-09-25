@@ -9,39 +9,29 @@ namespace DotnetPing;
 
 public sealed class AppCommand : AsyncCommand<AppSettings>
 {
-    public const int COMMAND_LINE_SUCCESS = 0;
-
-    public const int COMMAND_LINE_ERROR = 1;
-
-    public const int COMMAND_LINE_USAGE_ERROR = 64;
-
     public override async Task<int> ExecuteAsync(
         [NotNull] CommandContext commandContext,
         [NotNull] AppSettings settings)
     {
         var services = GetServices(settings);
 
-        var builder = services.GetRequiredService<PingContextBuilder>();
-
-        var context = await builder.Build(settings);
-
-        if (!context.Urls.Any())
-        {
-            return COMMAND_LINE_USAGE_ERROR;
-        }
-
         var service = services.GetRequiredService<PingService>();
 
-        var results = await service.Run(context);
+        var results = await service.Run(settings);
+
+        if (!results.Any())
+        {
+            return CommandLineExitCode.UsageError;
+        }
 
         var isAllSuccess = results.All(x => x.IsSuccess);
 
         if (!isAllSuccess)
         {
-            return COMMAND_LINE_ERROR;
+            return CommandLineExitCode.Error;
         }
 
-        return COMMAND_LINE_SUCCESS;
+        return CommandLineExitCode.Success;
     }
 
     private static ServiceProvider GetServices(AppSettings settings)

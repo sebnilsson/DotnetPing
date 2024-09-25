@@ -4,8 +4,12 @@ namespace DotnetPing.Ping;
 
 public class PingContextBuilder(IConfigReader configReader)
 {
+    public event EventHandler<string>? OnConfigReaderError;
+
     public async Task<PingContext> Build(AppSettings settings)
     {
+        configReader.OnError += (sender, filePath) => OnConfigReaderError?.Invoke(this, filePath);
+
         var urls = settings.Urls.Select(url => GetUrlConfig(url, settings)).ToList();
 
         if (!urls.Any())

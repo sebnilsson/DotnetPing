@@ -1,40 +1,37 @@
 ﻿namespace DotnetPing.Ping;
 
-public record UrlConfig
+public record UrlConfig : Config
 {
-    public UrlConfig(string url, uint? sleep = null, uint? timeout = null, uint[]? expectedStatusCodes = null)
+    public UrlConfig(string url, Config config)
+        : base(sleep: config.Sleep, timeout: config.Timeout, expectedStatusCodes: config.ExpectedStatusCodes)
     {
-        Url = EnsureUrl(url);
-        Sleep = sleep > 0 ? sleep.Value : AppSettings.DefaultSleep;
-        Timeout = timeout > 0 ? timeout.Value : AppSettings.DefaultTimeout;
-
-        var statusCodes = (expectedStatusCodes ?? []).Where(x => x > 100 && x < 600).ToArray();
-
-        ExpectedStatusCodes = statusCodes.Length > 0 ? statusCodes : AppSettings.DefaultExpect;
+        Url = EnsureUrl(url, config);
     }
-
-    public uint[] ExpectedStatusCodes { get; }
 
     public bool IsValid => !string.IsNullOrEmpty(Url);
 
-    public uint Sleep { get; }
+    public string Url { get; init; } = string.Empty;
 
-    public uint Timeout { get; }
-
-    public string Url { get; }
-
-    private static string EnsureUrl(string url)
+    private static string EnsureUrl(string url, Config config)
     {
         if (string.IsNullOrWhiteSpace(url))
         {
             return string.Empty;
         }
 
-        if (!url.StartsWith("http://") && !url.StartsWith("https://"))
+        var isUrlAbsolute = Uri.IsWellFormedUriString(url, UriKind.Absolute);
+        if (isUrlAbsolute)
         {
-            url = $"https://{url}";
+            return url;
         }
 
-        return Uri.IsWellFormedUriString(url, UriKind.Absolute) ? url : string.Empty;
+        if (!string.IsNullOrWhiteSpace(config.BaseUrl))
+        {
+            return $"{config.BaseUrl.TrimEnd('/')}/{url.TrimStart('/')}";
+        }
+
+        var urlResult = $"https://{url}";
+
+        return Uri.IsWellFormedUriString(urlResult, UriKind.Absolute) ? urlResult : string.Empty;
     }
 }

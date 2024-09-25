@@ -1,5 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using DotnetPing.Config;
+using DotnetPing.Configuration;
 using DotnetPing.Http;
 using DotnetPing.Ping;
 using Microsoft.Extensions.DependencyInjection;

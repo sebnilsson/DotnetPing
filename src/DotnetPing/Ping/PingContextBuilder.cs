@@ -1,4 +1,4 @@
-﻿using DotnetPing.Config;
+﻿using DotnetPing.Configuration;
 
 namespace DotnetPing.Ping;
 
@@ -14,7 +14,7 @@ public class PingContextBuilder(IConfigReader configReader)
 
             var config = await configReader.Read(configFilePath, useMinimal: settings.Minimal);
 
-            var configUrls = config.GetUrlConfigs().ToList();
+            var configUrls = config.GetUrlConfigs();
 
             urls.AddRange(configUrls);
         }
@@ -33,7 +33,14 @@ public class PingContextBuilder(IConfigReader configReader)
     {
         var sleep = GetSleep(settings);
 
-        return new UrlConfig(url, sleep: sleep, timeout: settings.Timeout, expectedStatusCodes: settings.Expect);
+        var config = settings.ToConfig();
+
+        return new UrlConfig(url, config)
+        {
+            Sleep = sleep,
+            Timeout = settings.Timeout,
+            ExpectedStatusCodes = settings.Expect
+        };
     }
 
     private static uint GetSleep(AppSettings settings)

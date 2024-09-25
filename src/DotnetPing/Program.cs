@@ -21,8 +21,8 @@ finally
 {
     if (Debugger.IsAttached)
     {
-        AnsiConsole.WriteLine();
-        AnsiConsole.WriteLine("Press any key to close application...");
+        Console.WriteLine();
+        Console.WriteLine("Press any key to close application...");
         Console.ReadKey(intercept: true);
     }
 
@@ -33,10 +33,11 @@ static void AppConfig(IConfigurator config)
 {
     config.SetApplicationName("dotnet-guid");
 
-    // TODO: Update
-    //config.AddExample(["https://dot.net"]);
-    //config.AddExample(["https://dot.net https://www.nuget.org", "-b", "1000", "-m", "2000"]);
-    //config.AddExample(["-c", "ping.json"]);
+    config.AddExample(["https://example.com"]);
+    config.AddExample(["https://example.com", "other.com", "-s", "1000"]);
+    config.AddExample(["https://example.com", "other.com", "-s", "1000", "-s", "2000", "-t", "5000"]);
+    config.AddExample(["/about", "/contact", "-b", "https://example.com"]);
+    config.AddExample(["-c", "ping.json"]);
 
 #if DEBUG
     config.PropagateExceptions();

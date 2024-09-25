@@ -23,12 +23,12 @@ public class HttpRequester(IHttpClientFactory httpClientFactory) : IHttpRequeste
         {
             var statusCode = ex.StatusCode != null ? (uint)ex.StatusCode.Value : 0;
 
-            return new HttpRequestResult(statusCode, ex);
+            return new HttpRequestResult(statusCode, IsTimeout: false, ex);
 
         }
         catch (Exception ex)
         {
-            return new HttpRequestResult(0, ex);
+            return new HttpRequestResult(0, IsTimeout: true, ex);
         }
     }
 

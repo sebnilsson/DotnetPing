@@ -1,7 +1,7 @@
 ﻿using System.Text.Json;
 using Spectre.Console;
 
-namespace DotnetPing.Config;
+namespace DotnetPing.Configuration;
 
 public class FileConfigReader : IConfigReader
 {

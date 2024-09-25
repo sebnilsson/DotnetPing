@@ -6,6 +6,11 @@ public class PingService(IHttpRequester httpRequester)
 {
     public async Task<PingResult[]> Run(PingContext context)
     {
+        if (context.Urls.Length == 0)
+        {
+            return [];
+        }
+
         var tasks = new List<Task<PingResult>>(context.Urls.Length);
 
         var lastUrl = context.Urls.LastOrDefault();
@@ -30,8 +35,8 @@ public class PingService(IHttpRequester httpRequester)
     {
         var result = await httpRequester.Get(url, context);
 
-        var isSuccess = url.ExpectedStatusCodes.Contains(result.HttpStatusCode);
+        var isSuccess = result.HttpStatusCode > 0 && url.ExpectedStatusCodes.Contains(result.HttpStatusCode);
 
-        return new PingResult(isSuccess, result.HttpStatusCode, url.Url, result.Exception);
+        return new PingResult(isSuccess, result, url);
     }
 }

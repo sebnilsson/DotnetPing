@@ -1,4 +1,4 @@
-﻿namespace DotnetPing.Config;
+﻿namespace DotnetPing.Configuration;
 
 public interface IConfigReader
 {

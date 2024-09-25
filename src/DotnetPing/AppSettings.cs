@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Net;
+using DotnetPing.Ping;
 using Spectre.Console.Cli;
 
 namespace DotnetPing;
@@ -17,6 +18,10 @@ public class AppSettings : CommandSettings
     public string[] Urls { get; init; } = [];
 
     [Description(AppSettingsConfig.ConfigDescription)]
+    [CommandOption("-b|--base-url")]
+    public string BaseUrl { get; init; } = string.Empty;
+
+    [Description(AppSettingsConfig.ConfigDescription)]
     [CommandOption("-c|--config")]
     public string Config { get; init; } = string.Empty;
 
@@ -27,6 +32,10 @@ public class AppSettings : CommandSettings
     [Description(AppSettingsConfig.ExpectDescription)]
     [CommandOption("-e|--expect")]
     public uint[] Expect { get; init; } = DefaultExpect;
+
+    [Description(AppSettingsConfig.MethodDescription)]
+    [CommandOption("-X|--request")]
+    public string Method { get; init; } = "GET";
 
     [Description(AppSettingsConfig.MinimalDescription)]
     [CommandOption("-m|--minimal")]
@@ -39,6 +48,16 @@ public class AppSettings : CommandSettings
     [Description(AppSettingsConfig.TimeoutDescription)]
     [CommandOption("-t|--timeout")]
     public uint Timeout { get; init; } = DefaultTimeout;
+
+    public Config ToConfig()
+    {
+        return new Config
+        {
+            BaseUrl = BaseUrl,
+            ExpectedStatusCodes = Expect,
+            Timeout = Timeout
+        };
+    }
 }
 
 internal static class AppSettingsConfig
@@ -48,6 +67,8 @@ internal static class AppSettingsConfig
     public const string ExpectDescription = "Sets the expected status code of requests. Default: 200.";
 
     public const string DebugDescription = "Use debug console messaging.";
+
+    public const string MethodDescription = "Sets the request method. Default: GET.";
 
     public const string MinimalDescription = "Use minimal console messaging.";
 

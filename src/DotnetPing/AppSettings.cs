@@ -15,7 +15,7 @@ public class AppSettings : CommandSettings
 
     public const uint DefaultSleep = 1_000;
 
-    public const uint DefaultTimeout = 15_000;
+    public const uint DefaultTimeout = 10_000;
 
     [Description(AppSettingsConfig.UrlsDescription)]
     [CommandArgument(0, "[urls]")]

@@ -51,7 +51,8 @@ public static class ConsoleWriter
         }
 
         var text = new Text(
-            $"{url.Method}: {url.Url} (Timeout: {url.Config.Timeout}, Sleep: {url.Config.Sleep}, " +
+            $"{url.Method}: {url.Url} (" +
+            (context.UseDebug ? $"Timeout: {url.Config.Timeout}, Sleep: {url.Config.Sleep}, " : string.Empty) +
             $"Expect: {GetJson(url.Config.ExpectedStatusCodes)})" +
             Environment.NewLine);
 
@@ -75,8 +76,8 @@ public static class ConsoleWriter
 
         var text = new Text(
             $"{result.HttpStatusCode}: {result.Url} (Elapsed: {result.Elapsed.TotalSeconds.ToString("##0.00")}s)" +
-            $"{(result.Result == PingResultType.Failure ? " (Failed)" : null)}" +
-            $"{(result.Result == PingResultType.Timeout ? " (Timeout)" : null)}" +
+            $"{(result.Result == PingResultType.Failure ? " [Failed]" : null)}" +
+            $"{(result.Result == PingResultType.Timeout ? " [Timeout]" : null)}" +
             Environment.NewLine,
             style);
 

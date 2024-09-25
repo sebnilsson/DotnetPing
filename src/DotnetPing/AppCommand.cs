@@ -24,7 +24,7 @@ public sealed class AppCommand : AsyncCommand<AppSettings>
             return CommandLineExitCode.UsageError;
         }
 
-        var isAllSuccess = results.All(x => x.IsSuccess);
+        var isAllSuccess = results.All(x => x.Result == PingResultType.Success);
 
         if (!isAllSuccess)
         {

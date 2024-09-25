@@ -1,4 +1,5 @@
-﻿using DotnetPing.Http;
+﻿using System.Diagnostics;
+using DotnetPing.Http;
 
 namespace DotnetPing.Ping;
 
@@ -12,9 +13,6 @@ public class PingService(PingContextBuilder pingContextBuilder, IHttpRequester h
             (sender, filePath) => ConsoleWriter.WriteOnConfigReaderError(filePath, settings);
 
         ConsoleWriter.WriteContext(context);
-
-        httpRequester.OnResultStarted += (sender, url) => ConsoleWriter.WriteOnResultStarted(url, context);
-        httpRequester.OnResultCompleted += (sender, result) => ConsoleWriter.WriteOnResultCompleted(result, context);
 
         var results = await GetResults(context);
 
@@ -52,10 +50,20 @@ public class PingService(PingContextBuilder pingContextBuilder, IHttpRequester h
 
     private async Task<PingResult> GetResult(UrlConfig url, PingContext context)
     {
+        ConsoleWriter.WriteOnResultStarted(url, context);
+
+        Stopwatch stopwatch = Stopwatch.StartNew();
+
         var result = await httpRequester.Get(url, context);
+
+        stopwatch.Stop();
 
         var isSuccess = result.HttpStatusCode > 0 && url.Config.ExpectedStatusCodes.Contains(result.HttpStatusCode);
 
-        return new PingResult(isSuccess, result, url);
+        var pingResult = new PingResult(isSuccess, stopwatch.Elapsed, result, url);
+
+        ConsoleWriter.WriteOnResultCompleted(pingResult, context);
+
+        return pingResult;
     }
 }

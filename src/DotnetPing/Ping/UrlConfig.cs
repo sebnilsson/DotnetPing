@@ -4,11 +4,6 @@ namespace DotnetPing.Ping;
 
 public record UrlConfig
 {
-    public UrlConfig(string url, Config config)
-        : this(url, AppSettings.DefaultMethod, config)
-    {
-    }
-
     public UrlConfig(string url, string method, Config config)
     {
         Url = EnsureUrl(url, config);

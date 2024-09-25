@@ -1,8 +1,8 @@
 ﻿using System.Text.Json;
-using DotnetPing.Http;
 using DotnetPing.Ping;
 using Spectre.Console;
 using Spectre.Console.Json;
+using Spectre.Console.Rendering;
 
 namespace DotnetPing;
 
@@ -29,12 +29,17 @@ public static class ConsoleWriter
             return;
         }
 
-        var json = GetJsonText(context);
-        var text = new Markup("[blue]Context used[/]");
+        var header = new Rule("Context used")
+        {
+            Border = BoxBorder.Double,
+            Style = new Style(Color.Blue)
+        };
 
-        AnsiConsole.Write(text);
-        AnsiConsole.WriteLine();
-        AnsiConsole.Write(json);
+        var json = GetJson(context);
+        var jsonText = new JsonText(json);
+
+        AnsiConsole.Write(header);
+        AnsiConsole.Write(jsonText);
         AnsiConsole.WriteLine();
     }
 
@@ -47,66 +52,120 @@ public static class ConsoleWriter
 
         var text = new Text(
             $"{url.Method}: {url.Url} (Timeout: {url.Config.Timeout}, Sleep: {url.Config.Sleep}, " +
-            $"Expect: {GetJson(url.Config.ExpectedStatusCodes)})",
-            new Style(Color.Yellow));
+            $"Expect: {GetJson(url.Config.ExpectedStatusCodes)})" +
+            Environment.NewLine);
 
-        lock (AnsiConsole.Console)
-        {
-            AnsiConsole.Write(text);
-            AnsiConsole.WriteLine();
-        }
+        AnsiConsole.Write(text);
     }
 
-    public static void WriteOnResultCompleted(HttpResult result, PingContext context)
+    public static void WriteOnResultCompleted(PingResult result, PingContext context)
     {
         if (context.UseMinimal)
         {
             return;
         }
 
-        var text = new Text(
-            $"{result.HttpStatusCode}: {result.Url}{(result.IsTimeout ? " (Timeout)" : null)}",
-            new Style(Color.Green));
-
-        lock (AnsiConsole.Console)
+        var style = result.Result switch
         {
-            AnsiConsole.Write(text);
-            AnsiConsole.WriteLine();
-        }
+            PingResultType.Success => new Style(Color.Green),
+            PingResultType.Failure => new Style(Color.Red),
+            PingResultType.Timeout => new Style(Color.Yellow),
+            _ => new Style(Color.Default)
+        };
+
+        var text = new Text(
+            $"{result.HttpStatusCode}: {result.Url} (Elapsed: {result.Elapsed.TotalSeconds.ToString("##0.00")}s)" +
+            $"{(result.Result == PingResultType.Failure ? " (Failed)" : null)}" +
+            $"{(result.Result == PingResultType.Timeout ? " (Timeout)" : null)}" +
+            Environment.NewLine,
+            style);
+
+        AnsiConsole.Write(text);
     }
+
     public static void WriteResults(PingResult[] results, PingContext context)
     {
         var table = new Table();
 
         table.AddColumn("Tests");
-        table.AddColumn("Success");
-        table.AddColumn("Failed");
-        table.AddColumn("Timeouts");
+        table.AddColumn(new TableColumn(new Text("Success", new Style(Color.Green))));
+        table.AddColumn(new TableColumn(new Text("Failed", new Style(Color.Red))));
+        table.AddColumn(new TableColumn(new Text("Timeouts", new Style(Color.Yellow))));
 
-        var totalCount = results.Length;
-        var successCount = results.Count(x => x.IsSuccess);
-        var failedCount = results.Count(x => !x.IsSuccess);
-        var timeoutCount = results.Count(x => x.IsTimeout);
+        var successResults = results.Where(x => x.Result == PingResultType.Success).ToArray();
+        var failureResults = results.Where(x => x.Result == PingResultType.Failure).ToArray();
+        var timeoutResults = results.Where(x => x.Result == PingResultType.Timeout).ToArray();
 
         table.AddRow(
-            $"{totalCount}",
-            $"[green]{successCount}[/]",
-            $"[red]{failedCount}[/]",
-            $"[yellow]({timeoutCount})[/]");
+            $"{results.Length}",
+            $"[green]{successResults.Length}[/]",
+            $"[red]{failureResults.Length}[/]",
+            $"[yellow]{timeoutResults.Length}[/]");
 
         AnsiConsole.Write(table);
-        AnsiConsole.WriteLine();
+
+        if (failureResults.Any() || context.UseDebug)
+        {
+            WriteResultsTable("Failed", Color.Red, failureResults, includeExpected: true);
+        }
+
+        if (timeoutResults.Any() || context.UseDebug)
+        {
+            WriteResultsTable("Timeouts", Color.Yellow, timeoutResults);
+        }
+
+        if ((successResults.Any() && !context.UseMinimal) || context.UseDebug)
+        {
+            WriteResultsTable("Success", Color.Green, successResults);
+        }
+    }
+
+    private static void WriteResultsTable(string title, Color keyColor, PingResult[] results, bool includeExpected = false)
+    {
+        var header = new Rule(title)
+        {
+            Border = BoxBorder.Double,
+        };
+
+        AnsiConsole.Write(header);
+
+        var table = new Table();
+        table.BorderColor(keyColor);
+
+        table.AddColumn("Method");
+        table.AddColumn("Url", x => x.NoWrap = true);
+        table.AddColumn("Status");
+        table.AddColumn("Elapsed");
+        if (includeExpected)
+        {
+            table.AddColumn("Expected");
+        }
+
+        foreach (var result in results)
+        {
+            string[] values = [
+                result.Method,
+                result.Url,
+                result.HttpStatusCode.ToString(),
+                $"{result.Elapsed.TotalSeconds.ToString("# ##0.00")}s"
+            ];
+
+            var texts = values.Select(x => new Text(x)).ToArray();
+
+            string[] additionValues = includeExpected ? [GetJson(result.ExpectedStatusCodes)] : [];
+
+            var additionalTexts = additionValues.Select(x => new Text(x)).ToArray();
+
+            IRenderable[] columns = [.. texts, .. additionalTexts];
+
+            table.AddRow(columns);
+        }
+
+        AnsiConsole.Write(table);
     }
 
     private static string GetJson<T>(T obj)
     {
         return JsonSerializer.Serialize(obj, s_jsonSerializerOptions);
-    }
-
-    private static JsonText GetJsonText<T>(T obj)
-    {
-        var json = GetJson(obj);
-
-        return new JsonText(json);
     }
 }

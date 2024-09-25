@@ -42,6 +42,6 @@ public class PingContextBuilder(IConfigReader configReader)
     {
         var config = settings.ToConfig();
 
-        return new UrlConfig(url, config);
+        return new UrlConfig(url, settings.Method, config);
     }
 }

@@ -38,7 +38,7 @@ public record FileConfigJson
         foreach (var url in Urls ?? [])
         {
             var config = GetConfig(url);
-            yield return new UrlConfig(url.Url, config);
+            yield return new UrlConfig(url.Url, url.Method, config);
         }
 
         foreach (var group in Groups ?? [])
@@ -46,7 +46,7 @@ public record FileConfigJson
             foreach (var url in group.Urls ?? [])
             {
                 var config = GetConfig(group);
-                yield return new UrlConfig(url, config);
+                yield return new UrlConfig(url, group.Method, config);
             }
         }
     }
@@ -54,9 +54,9 @@ public record FileConfigJson
     private static Config GetConfig(JsonBase jsonBase)
     {
         return new(
-            jsonBase.BaseUrl,
-            jsonBase.Sleep,
-            jsonBase.Timeout,
-            jsonBase.Expect);
+            baseUrl: jsonBase.BaseUrl,
+            sleep: jsonBase.Sleep,
+            timeout: jsonBase.Timeout,
+            expectedStatusCodes: jsonBase.Expect);
     }
 }

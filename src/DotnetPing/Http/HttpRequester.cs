@@ -4,10 +4,6 @@ namespace DotnetPing.Http;
 
 public class HttpRequester(IHttpClientFactory httpClientFactory) : IHttpRequester
 {
-    public event EventHandler<UrlConfig>? OnResultStarted;
-
-    public event EventHandler<HttpResult>? OnResultCompleted;
-
     public async Task<HttpResult> Get(UrlConfig url, PingContext context)
     {
         var client = httpClientFactory.CreateClient();
@@ -17,11 +13,7 @@ public class HttpRequester(IHttpClientFactory httpClientFactory) : IHttpRequeste
 
         var request = new HttpRequestMessage { Method = method, RequestUri = new Uri(url.Url) };
 
-        OnResultStarted?.Invoke(this, url);
-
         var result = await GetResult(client, request, url);
-
-        OnResultCompleted?.Invoke(this, result);
 
         return result;
     }
@@ -38,7 +30,7 @@ public class HttpRequester(IHttpClientFactory httpClientFactory) : IHttpRequeste
         {
             var statusCode = ex.StatusCode != null ? (uint)ex.StatusCode.Value : 0;
 
-            return new HttpResult(url.Url, statusCode, IsTimeout: false, ex);
+            return new HttpResult(url.Url, statusCode, Exception: ex);
 
         }
         catch (Exception ex)

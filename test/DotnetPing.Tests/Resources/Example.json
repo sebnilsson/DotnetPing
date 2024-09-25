@@ -3,45 +3,45 @@
         {
             "url": "dot.com",
             "timeout": 15000,
-            "sleep": 1000,
+            "sleep": 100,
             "expect": [ 200, 201, 403 ]
         },
         {
             "url": "http://bing.com",
             "timeout": 10000,
-            "sleep": 2000,
+            "sleep": 200,
             "expect": [ 200, 301, 302 ]
         },
         {
             "url": "https://askjeeves.com",
             "method": "DELETE",
             "timeout": 5000,
-            "sleep": 2000,
+            "sleep": 200,
             "expect": [ 403, 405 ]
         },
         {
             "timeout": 10000,
-            "sleep": 5000,
+            "sleep": 500,
             "expect": [ 200, 201 ]
         }
     ],
     "groups": [
         {
             "timeout": 20000,
-            "sleep": 2500,
+            "sleep": 250,
             "expect": [ 200, 201 ],
             "urls": [ "yahoo.com", "google.com" ]
         },
         {
             "timeout": 5000,
-            "sleep": 5500,
+            "sleep": 550,
             "baseUrl": "https://learn.microsoft.com/",
             "expect": [ 200, 201 ],
             "urls": [ "/dotnet", "/dotnet/csharp" ]
         },
         {
             "timeout": 50000,
-            "sleep": 5500,
+            "sleep": 550,
             "expect": [ 200, 201 ]
         }
     ]

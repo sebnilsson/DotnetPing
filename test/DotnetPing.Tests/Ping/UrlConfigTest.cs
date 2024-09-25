@@ -14,7 +14,7 @@ public class UrlConfigTest
         var config = new Config(baseUrl: baseUrl);
 
         // Act
-        var urlConfig = new UrlConfig(url, config);
+        var urlConfig = new UrlConfig(url, AppSettings.DefaultMethod, config);
 
         // Assert
         Assert.Equal(expected, urlConfig.Url);

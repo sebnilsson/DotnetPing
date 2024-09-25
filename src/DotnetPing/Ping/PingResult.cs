@@ -4,15 +4,19 @@ namespace DotnetPing.Ping;
 
 public record PingResult
 {
-    public PingResult(bool isSuccess, HttpResult result, UrlConfig url)
+    public PingResult(bool isSuccess, TimeSpan elapsed, HttpResult result, UrlConfig url)
     {
-        IsSuccess = isSuccess;
+        Elapsed = elapsed;
         Exception = result.Exception;
-        HttpStatusCode = result.HttpStatusCode;
-        IsTimeout = result.IsTimeout;
         ExpectedStatusCodes = url.Config.ExpectedStatusCodes;
+        HttpStatusCode = result.HttpStatusCode;
+        Method = url.Method;
         Url = url.Url;
+
+        Result = isSuccess ? PingResultType.Success : result.IsTimeout ? PingResultType.Timeout : PingResultType.Failure;
     }
+
+    public TimeSpan Elapsed { get; }
 
     public Exception? Exception { get; }
 
@@ -20,9 +24,16 @@ public record PingResult
 
     public uint HttpStatusCode { get; }
 
-    public bool IsSuccess { get; }
+    public PingResultType Result { get; }
 
-    public bool IsTimeout { get; }
+    public string Method { get; }
 
     public string Url { get; }
+}
+
+public enum PingResultType
+{
+    Success,
+    Failure,
+    Timeout
 }

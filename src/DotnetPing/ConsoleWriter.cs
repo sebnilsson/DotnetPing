@@ -123,9 +123,10 @@ public static class ConsoleWriter
 
     private static void WriteResultsTable(string title, Color keyColor, PingResult[] results, bool includeExpected = false)
     {
-        var header = new Rule(title)
+        var header = new Rule($"{title} ({results.Length})")
         {
             Border = BoxBorder.Double,
+            Style = new Style(decoration: Decoration.Bold)
         };
 
         AnsiConsole.Write(header);

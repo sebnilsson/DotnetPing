@@ -12,10 +12,10 @@ public record Config
         Timeout = timeout > 0 ? timeout.Value : AppSettings.DefaultTimeout;
 
         ExpectedStatusCodes = EnsureExpectedStatusCodes(expectedStatusCodes ?? []);
-        BaseUrl = baseUrl ?? string.Empty;
+        BaseUrl = new Url(baseUrl);
     }
 
-    public string BaseUrl { get; }
+    public Url BaseUrl { get; }
 
     public uint[] ExpectedStatusCodes { get; }
 

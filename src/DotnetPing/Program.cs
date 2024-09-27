@@ -31,7 +31,7 @@ finally
 
 static void AppConfig(IConfigurator config)
 {
-    config.SetApplicationName("dotnet-guid");
+    config.SetApplicationName("dotnet-ping");
 
     config.AddExample(["https://example.com"]);
     config.AddExample(["https://example.com", "other.com", "-s", "1000"]);

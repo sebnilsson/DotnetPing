@@ -21,6 +21,8 @@ public static class HttpMethodResolver
                 return HttpMethod.Patch;
             case "head":
                 return HttpMethod.Head;
+            case "options":
+                return HttpMethod.Options;
         }
 
         return HttpMethod.Get;

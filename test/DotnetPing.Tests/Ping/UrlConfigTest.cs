@@ -17,6 +17,6 @@ public class UrlConfigTest
         var urlConfig = new UrlConfig(url, AppSettings.DefaultMethod, config);
 
         // Assert
-        Assert.Equal(expected, urlConfig.Url);
+        Assert.Equal(expected, urlConfig.Url.Value);
     }
 }

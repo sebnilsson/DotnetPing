@@ -13,15 +13,15 @@ public class AppSettings : CommandSettings
 
     public const string DefaultConfig = "ping.json";
 
-    public const uint DefaultSleep = 1_000;
+    public const uint DefaultSleep = 500;
 
-    public const uint DefaultTimeout = 10_000;
+    public const uint DefaultTimeout = 5_000;
 
     [Description(AppSettingsConfig.UrlsDescription)]
     [CommandArgument(0, "[urls]")]
     public string[] Urls { get; init; } = [];
 
-    [Description(AppSettingsConfig.ConfigDescription)]
+    [Description(AppSettingsConfig.BaseUrlDescription)]
     [CommandOption("-b|--base-url")]
     public string BaseUrl { get; init; } = string.Empty;
 
@@ -79,6 +79,8 @@ internal static class AppSettingsConfig
 {
     public const string ConfigDescription = "The path to the JSON config file.";
 
+    public const string BaseUrlDescription = "Sets the base-URL to use for requests.";
+
     public const string ExpectDescription = "Sets the expected status code of requests. Default: 200.";
 
     public const string DebugDescription = "Use debug console messaging.";
@@ -87,9 +89,9 @@ internal static class AppSettingsConfig
 
     public const string MinimalDescription = "Use minimal console messaging.";
 
-    public const string SleepDescription = "Sets the sleep time between requests in milliseconds. Default: 1000ms.";
+    public const string SleepDescription = "Sets the sleep time between requests in milliseconds. Default: 500ms.";
 
-    public const string TimeoutDescription = "Sets the timeout for requests in milliseconds. Default: 15000ms. If two values are provided, a random number between the two numbers will be generated for each request.";
+    public const string TimeoutDescription = "Sets the timeout for requests in milliseconds. Default: 5000ms. If two values are provided, a random number between the two numbers will be generated for each request.";
 
     public const string UrlsDescription = "The URLs to ping. If not specified, the URLs are read from the JSON config file.";
 }

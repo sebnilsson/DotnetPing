@@ -9,9 +9,7 @@ public class HttpRequester(IHttpClientFactory httpClientFactory) : IHttpRequeste
         var client = httpClientFactory.CreateClient();
         client.Timeout = TimeSpan.FromMilliseconds(url.Config.Timeout);
 
-        var method = HttpMethodResolver.Get(url.Method);
-
-        var request = new HttpRequestMessage { Method = method, RequestUri = new Uri(url.Url) };
+        var request = new HttpRequestMessage { Method = url.Method, RequestUri = new Uri(url.Url.Value) };
 
         var result = await GetResult(client, request, url);
 
@@ -24,18 +22,18 @@ public class HttpRequester(IHttpClientFactory httpClientFactory) : IHttpRequeste
         {
             var response = await client.SendAsync(request);
 
-            return new HttpResult(url.Url, (uint)response.StatusCode);
+            return new HttpResult(url.Url.Value, (uint)response.StatusCode);
         }
         catch (HttpRequestException ex)
         {
             var statusCode = ex.StatusCode != null ? (uint)ex.StatusCode.Value : 0;
 
-            return new HttpResult(url.Url, statusCode, Exception: ex);
+            return new HttpResult(url.Url.Value, statusCode, Exception: ex);
 
         }
         catch (Exception ex)
         {
-            return new HttpResult(url.Url, 0, IsTimeout: true, ex);
+            return new HttpResult(url.Url.Value, 0, IsTimeout: true, ex);
         }
     }
 }

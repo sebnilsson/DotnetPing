@@ -1,9 +1,17 @@
 ﻿namespace DotnetPing.Ping;
 
+using System.Linq;
+
 public readonly struct PingContext(IReadOnlyList<UrlConfig> urls, bool useMinimal, bool useDebug)
 {
+    public void Abc()
+    {
+    }
     public UrlConfig[] Urls { get; } =
-        urls.Where(x => x.IsValidUrl).DistinctBy(x => x.Url, StringComparer.InvariantCultureIgnoreCase).ToArray();
+        urls
+        .Where(x => x.Url.HasValue)
+        .DistinctBy(x => new { x.Url.Value, x.Method.Method })
+        .ToArray();
 
     public bool UseMinimal { get; } = useMinimal;
 

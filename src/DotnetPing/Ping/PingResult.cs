@@ -10,8 +10,8 @@ public record PingResult
         Exception = result.Exception;
         ExpectedStatusCodes = url.Config.ExpectedStatusCodes;
         HttpStatusCode = result.HttpStatusCode;
-        Method = url.Method;
-        Url = url.Url;
+        Method = url.Method.ToString();
+        Url = url.Url.Value;
 
         Result = isSuccess ? PingResultType.Success : result.IsTimeout ? PingResultType.Timeout : PingResultType.Failure;
     }

@@ -86,7 +86,13 @@ public static class ConsoleWriter
 
     public static void WriteResults(PingResult[] results, PingContext context)
     {
+        if (results.Length == 0)
+        {
+            return;
+        }
+
         var table = new Table();
+        table.RoundedBorder();
 
         table.AddColumn("Tests");
         table.AddColumn(new TableColumn(new Text("Success", new Style(Color.Green))));
@@ -107,12 +113,12 @@ public static class ConsoleWriter
 
         if (failureResults.Any() || context.UseDebug)
         {
-            WriteResultsTable("Failed", Color.Red, failureResults, includeExpected: true);
+            WriteResultsTable("Failed", Color.Red, failureResults);
         }
 
         if (timeoutResults.Any() || context.UseDebug)
         {
-            WriteResultsTable("Timeouts", Color.Yellow, timeoutResults);
+            WriteResultsTable("Timeouts", Color.Yellow, timeoutResults, includeExpected: false);
         }
 
         if ((successResults.Any() && !context.UseMinimal) || context.UseDebug)
@@ -121,7 +127,7 @@ public static class ConsoleWriter
         }
     }
 
-    private static void WriteResultsTable(string title, Color keyColor, PingResult[] results, bool includeExpected = false)
+    private static void WriteResultsTable(string title, Color keyColor, PingResult[] results, bool includeExpected = true)
     {
         var header = new Rule($"{title} ({results.Length})")
         {
@@ -133,6 +139,7 @@ public static class ConsoleWriter
 
         var table = new Table();
         table.BorderColor(keyColor);
+        table.RoundedBorder();
 
         table.AddColumn("Method");
         table.AddColumn("Url", x => x.NoWrap = true);

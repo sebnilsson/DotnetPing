@@ -4,19 +4,15 @@ namespace DotnetPing.Ping;
 
 public class PingContextBuilder(IConfigReader configReader)
 {
-    public event EventHandler<string>? OnConfigReaderError;
-
-    public async Task<PingContext> Build(AppSettings settings)
+    public async Task<PingContext> Build(AppSettings settings, PingContextOptions? options = null)
     {
-        configReader.OnError += (sender, filePath) => OnConfigReaderError?.Invoke(this, filePath);
-
         var urls = settings.Urls.Select(url => GetUrlConfig(url, settings)).ToList();
 
-        if (!urls.Any())
+        if (urls.Count == 0)
         {
             var configFilePath = GetConfigFilePath(settings);
 
-            var config = await configReader.Read(configFilePath, useMinimal: settings.Minimal);
+            var config = await configReader.Read(configFilePath, options);
 
             var configUrls = config.GetUrlConfigs();
 
@@ -35,7 +31,7 @@ public class PingContextBuilder(IConfigReader configReader)
 
         string path = !string.IsNullOrWhiteSpace(settings.Config) ? settings.Config : AppSettings.DefaultConfig;
 
-        return Path.Combine(AppContext.BaseDirectory, path);
+        return Path.Combine(Environment.CurrentDirectory, path);
     }
 
     private static UrlConfig GetUrlConfig(string url, AppSettings settings)

@@ -7,18 +7,34 @@ public class PingService(PingContextBuilder pingContextBuilder, IHttpRequester h
 {
     public async Task<PingResult[]> Run(AppSettings settings)
     {
-        var context = await pingContextBuilder.Build(settings);
+        Stopwatch contextTimer = Stopwatch.StartNew();
 
-        pingContextBuilder.OnConfigReaderError +=
-            (sender, filePath) => ConsoleWriter.WriteOnConfigReaderError(filePath, settings);
+        var contextOptions = new PingContextOptions
+        {
+            UseMinimal = settings.Minimal,
+            OnReaderError = OnReaderError,
+            OnReaderRead = OnReaderRead
+        };
 
-        ConsoleWriter.WriteContext(context);
+        var context = await pingContextBuilder.Build(settings, contextOptions);
+
+        contextTimer.Stop();
+
+        ConsoleWriter.WriteContext(context, contextTimer);
+
+        Stopwatch resultsTimer = Stopwatch.StartNew();
 
         var results = await GetResults(context);
 
-        ConsoleWriter.WriteResults(results, context);
+        resultsTimer.Stop();
+
+        ConsoleWriter.WriteResults(results, context, resultsTimer);
 
         return results;
+
+        void OnReaderError(string filePath, Exception ex) => ConsoleWriter.WriteOnConfigReaderError(filePath, ex, settings);
+
+        void OnReaderRead(string filePath) => ConsoleWriter.WriteOnConfigReaderRead(filePath, settings);
     }
 
     private async Task<PingResult[]> GetResults(PingContext context)

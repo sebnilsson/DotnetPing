@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Diagnostics;
+using System.Text.Json;
 using DotnetPing.Ping;
 using Spectre.Console;
 using Spectre.Console.Json;
@@ -13,33 +14,55 @@ public static class ConsoleWriter
         WriteIndented = false
     };
 
-    public static void WriteOnConfigReaderError(string filePath, AppSettings settings)
+    public static void WriteOnConfigReaderRead(string filePath, AppSettings settings)
     {
+        if (!settings.Debug)
+        {
+            return;
+        }
+
+        var text = new Text("Reading config file at path:", new Style(Color.Blue));
         var path = new TextPath(filePath);
 
-        AnsiConsole.WriteLine("Error reading config file at path:");
+        AnsiConsole.Write(text);
+        AnsiConsole.WriteLine();
         AnsiConsole.Write(path);
         AnsiConsole.WriteLine();
     }
 
-    public static void WriteContext(PingContext context)
+    public static void WriteOnConfigReaderError(string filePath, Exception ex, AppSettings settings)
+    {
+        var text = new Text("Error reading config file at path:", new Style(Color.Red));
+        var path = new TextPath(filePath);
+
+        AnsiConsole.Write(text);
+        AnsiConsole.WriteLine();
+        AnsiConsole.Write(path);
+        AnsiConsole.WriteLine();
+    }
+
+    public static void WriteContext(PingContext context, Stopwatch contextTimer)
     {
         if (!context.UseDebug)
         {
             return;
         }
 
-        var header = new Rule("Context used")
-        {
-            Border = BoxBorder.Double,
-            Style = new Style(Color.Blue)
-        };
-
         var json = GetJson(context);
         var jsonText = new JsonText(json);
+        var jsonPanel = new Panel(jsonText)
+            .Header("Context used")
+            .Collapse()
+            .RoundedBorder()
+            .BorderColor(Color.Blue);
 
-        AnsiConsole.Write(header);
-        AnsiConsole.Write(jsonText);
+        AnsiConsole.Write(jsonPanel);
+
+        var text = new Text($"Context created with {context.Urls.Length} URLs " +
+            $"in {contextTimer.Elapsed.TotalSeconds:##0.00}s", new Style(Color.Blue));
+
+        AnsiConsole.Write(text);
+        AnsiConsole.WriteLine();
         AnsiConsole.WriteLine();
     }
 
@@ -75,7 +98,7 @@ public static class ConsoleWriter
         };
 
         var text = new Text(
-            $"{result.HttpStatusCode}: {result.Url} (Elapsed: {result.Elapsed.TotalSeconds.ToString("##0.00")}s)" +
+            $"{result.HttpStatusCode}: {result.Url} (Elapsed: {result.Elapsed.TotalSeconds:##0.00}s)" +
             $"{(result.Result == PingResultType.Failure ? " [Failed]" : null)}" +
             $"{(result.Result == PingResultType.Timeout ? " [Timeout]" : null)}" +
             Environment.NewLine,
@@ -84,8 +107,17 @@ public static class ConsoleWriter
         AnsiConsole.Write(text);
     }
 
-    public static void WriteResults(PingResult[] results, PingContext context)
+    public static void WriteResults(PingResult[] results, PingContext context, Stopwatch resultsTimer)
     {
+        var color = GetResultsColor(results);
+
+        var text = new Text($"Completed {results.Length} ping{(results.Length != 1 ? "s" : "")} " +
+            $"ran in {resultsTimer.Elapsed.TotalSeconds:# ##0.00}s");
+
+        AnsiConsole.WriteLine();
+        AnsiConsole.Write(text);
+        AnsiConsole.WriteLine();
+
         if (results.Length == 0)
         {
             return;
@@ -127,6 +159,26 @@ public static class ConsoleWriter
         }
     }
 
+    private static Color GetResultsColor(PingResult[] results)
+    {
+        if (results.Length == 0)
+        {
+            return Color.Default;
+        }
+
+        if (results.Any(x => x.Result == PingResultType.Failure))
+        {
+            return Color.Red;
+        }
+
+        if (results.Any(x => x.Result == PingResultType.Timeout))
+        {
+            return Color.Yellow;
+        }
+
+        return Color.Green;
+    }
+
     private static void WriteResultsTable(string title, Color keyColor, PingResult[] results, bool includeExpected = true)
     {
         var header = new Rule($"{title} ({results.Length})")
@@ -156,7 +208,7 @@ public static class ConsoleWriter
                 result.Method,
                 result.Url,
                 result.HttpStatusCode.ToString(),
-                $"{result.Elapsed.TotalSeconds.ToString("# ##0.00")}s"
+                $"{result.Elapsed.TotalSeconds:# ##0.00}s"
             ];
 
             var texts = values.Select(x => new Text(x)).ToArray();

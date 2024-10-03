@@ -1,13 +1,25 @@
 ﻿using System.Diagnostics;
 using DotnetPing.Http;
+using DotnetPing.Output;
 
 namespace DotnetPing.Ping;
 
 public class PingService(PingContextBuilder pingContextBuilder, IHttpRequester httpRequester)
 {
-    public async Task<PingResult[]> Run(AppSettings settings)
+    public async Task<PingResults> Run(AppSettings settings)
     {
-        Stopwatch contextTimer = Stopwatch.StartNew();
+        PingContext context = await GetContext(pingContextBuilder, settings);
+
+        PingResults results = await GetResults(context);
+
+        return results;
+    }
+
+    private async Task<PingContext> GetContext(PingContextBuilder pingContextBuilder, AppSettings settings)
+    {
+        ConsoleContextWriter.Start(settings);
+
+        var contextTimer = Stopwatch.StartNew();
 
         var contextOptions = new PingContextOptions
         {
@@ -20,28 +32,35 @@ public class PingService(PingContextBuilder pingContextBuilder, IHttpRequester h
 
         contextTimer.Stop();
 
-        ConsoleWriter.WriteContext(context, contextTimer);
+        ConsoleContextWriter.Done(context, contextTimer);
 
-        Stopwatch resultsTimer = Stopwatch.StartNew();
+        return context;
 
-        var results = await GetResults(context);
+        void OnReaderError(string filePath, Exception ex) => ConsoleConfigWriter.WriteOnReaderError(filePath, ex, settings);
+
+        void OnReaderRead(string filePath) => ConsoleConfigWriter.WriteOnReaderRead(filePath, settings);
+    }
+
+    private async Task<PingResults> GetResults(PingContext context)
+    {
+        ConsoleResultsWriter.Start(context);
+
+        var resultsTimer = Stopwatch.StartNew();
+
+        var results = await GetPingResults(context);
 
         resultsTimer.Stop();
 
-        ConsoleWriter.WriteResults(results, context, resultsTimer);
+        ConsoleResultsWriter.Done(results, context, resultsTimer);
 
         return results;
-
-        void OnReaderError(string filePath, Exception ex) => ConsoleWriter.WriteOnConfigReaderError(filePath, ex, settings);
-
-        void OnReaderRead(string filePath) => ConsoleWriter.WriteOnConfigReaderRead(filePath, settings);
     }
 
-    private async Task<PingResult[]> GetResults(PingContext context)
+    private async Task<PingResults> GetPingResults(PingContext context)
     {
         if (context.Urls.Length == 0)
         {
-            return [];
+            return PingResults.Empty;
         }
 
         var tasks = new List<Task<PingResult>>(context.Urls.Length);
@@ -50,7 +69,7 @@ public class PingService(PingContextBuilder pingContextBuilder, IHttpRequester h
 
         foreach (var url in context.Urls)
         {
-            var task = GetResult(url, context);
+            var task = GetPingResult(url, context);
             tasks.Add(task);
 
             if (url != lastUrl)
@@ -61,12 +80,14 @@ public class PingService(PingContextBuilder pingContextBuilder, IHttpRequester h
 
         await Task.WhenAll(tasks);
 
-        return tasks.Select(x => x.Result).ToArray();
+        var results = tasks.Select(x => x.Result).ToArray();
+
+        return new PingResults(results);
     }
 
-    private async Task<PingResult> GetResult(UrlConfig url, PingContext context)
+    private async Task<PingResult> GetPingResult(UrlConfig url, PingContext context)
     {
-        ConsoleWriter.WriteOnResultStarted(url, context);
+        ConsoleResultWriter.WriteOnStarted(url, context);
 
         Stopwatch stopwatch = Stopwatch.StartNew();
 
@@ -78,7 +99,7 @@ public class PingService(PingContextBuilder pingContextBuilder, IHttpRequester h
 
         var pingResult = new PingResult(isSuccess, stopwatch.Elapsed, result, url);
 
-        ConsoleWriter.WriteOnResultCompleted(pingResult, context);
+        ConsoleResultWriter.WriteOnCompleted(pingResult, context);
 
         return pingResult;
     }

@@ -35,5 +35,6 @@ public enum PingResultType
 {
     Success,
     Failure,
-    Timeout
+    Timeout,
+    None,
 }

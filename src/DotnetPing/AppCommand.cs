@@ -19,14 +19,12 @@ public sealed class AppCommand : AsyncCommand<AppSettings>
 
         var results = await service.Run(settings);
 
-        if (!results.Any())
+        if (results.ResultType == PingResultType.None)
         {
             return CommandLineExitCode.UsageError;
         }
 
-        var isAllSuccess = results.All(x => x.Result == PingResultType.Success);
-
-        if (!isAllSuccess)
+        if (results.ResultType != PingResultType.Success)
         {
             return CommandLineExitCode.Error;
         }

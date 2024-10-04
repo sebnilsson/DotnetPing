@@ -6,17 +6,17 @@ public class HttpRequester(IHttpClientFactory httpClientFactory) : IHttpRequeste
 {
     public async Task<HttpResult> Get(UrlConfig url, PingContext context)
     {
-        var client = httpClientFactory.CreateClient();
+        using var client = httpClientFactory.CreateClient();
         client.Timeout = TimeSpan.FromMilliseconds(url.Config.Timeout);
 
         var request = new HttpRequestMessage { Method = url.Method, RequestUri = new Uri(url.Url.Value) };
 
-        var result = await GetResult(client, request, url);
+        var result = await GetHttpResult(client, request, url);
 
         return result;
     }
 
-    private static async Task<HttpResult> GetResult(HttpClient client, HttpRequestMessage request, UrlConfig url)
+    private static async Task<HttpResult> GetHttpResult(HttpClient client, HttpRequestMessage request, UrlConfig url)
     {
         try
         {

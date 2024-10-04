@@ -64,3 +64,47 @@ or specify the full path to the file:
 ```
 dotnet ping --config ping.json
 ```
+
+### ping.json specification
+
+This is the specification for the ping.json file. The only required field is `url`. Missing `https://` prefix will automatically be added.
+All other fields have the same default values as the command line options.
+
+```
+{
+    // Single URLs, with Single configurations
+    "urls": [
+        {
+            "url": "test.com", // Required
+            "method": "GET", // Default: GET
+            "timeout": 15000, // Default: 5000ms
+            "sleep": 100, // Default: 500ms
+            "expect": [ 200, 201, 403 ] // Default: 200
+        },
+        {
+            "url": "http://test2.com",
+            "method": "DELETE",
+            "timeout": 10000,
+            "sleep": 200,
+            "expect": [ 201, 202, 204 ]
+        }
+    ],
+    // Groups of configurations, with single or multiple URLs
+    "groups": [
+        {
+            "timeout": 20000,
+            "sleep": 250,
+            "expect": [ 301, 302 ],
+            "urls": [ "test3.com/redirect", "test4.com/redirect" ]
+        },
+        {
+            "timeout": 5000,
+            "sleep": 550,
+            "baseUrl": "https://test5.com/",
+            "expect": [ 200, 201 ],
+            "urls": [ "/", "/about", "/contact", "products" ]
+        }
+    ]
+}
+
+```

@@ -15,13 +15,13 @@ public record FileConfigJson
 
     public class GroupJson : JsonBase
     {
+        public string BaseUrl { get; init; } = string.Empty;
+
         public string[] Urls { get; init; } = [];
     }
 
     public abstract class JsonBase
     {
-        public string BaseUrl { get; init; } = string.Empty;
-
         public uint[] Expect { get; init; } = [];
 
         public string Method { get; init; } = string.Empty;

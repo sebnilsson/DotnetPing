@@ -89,7 +89,7 @@ internal static class AppSettingsConfig
 
     public const string MinimalDescription = "Use minimal console messaging.";
 
-    public const string SleepDescription = "Sets the sleep time between requests in milliseconds. Default: 500ms.";
+    public const string SleepDescription = "Sets the sleep wait time between requests in milliseconds. Default: 500ms.";
 
     public const string TimeoutDescription = "Sets the timeout for requests in milliseconds. Default: 5000ms. If two values are provided, a random number between the two numbers will be generated for each request.";
 

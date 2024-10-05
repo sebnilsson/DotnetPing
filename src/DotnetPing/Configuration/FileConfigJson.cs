@@ -54,7 +54,7 @@ public record FileConfigJson
     private static Config GetConfig(JsonBase jsonBase)
     {
         return new(
-            baseUrl: jsonBase.BaseUrl,
+            baseUrl: string.Empty,
             sleep: jsonBase.Sleep,
             timeout: jsonBase.Timeout,
             expectedStatusCodes: jsonBase.Expect);

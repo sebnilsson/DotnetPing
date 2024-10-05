@@ -49,13 +49,13 @@ OPTIONS:
 To ping a specific ULR:
 
 ```
-dotnet ping https://dot.net
+dotnet ping https://example.com
 ```
 
 To ping two ULRs and wait between 1 and 2 seconds between requests:
 
 ```
-dotnet ping https://dot.net --backoff 1000 2000
+dotnet ping example.com example2.com/about -s 1000 -s 2000
 ```
 
 To use a `ping.json` file, either navigate to the directory where the file is located and run `dotnet ping`,

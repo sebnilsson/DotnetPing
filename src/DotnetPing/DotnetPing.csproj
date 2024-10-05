@@ -13,7 +13,7 @@
     <AssemblyName>dotnet-ping</AssemblyName>
     <PackageId>dotnet-ping</PackageId>
     <PackageVersion>$(Version)</PackageVersion>
-    <Version>0.5.0</Version>
+    <Version>0.5.1</Version>
 
     <ToolCommandName>dotnet-ping</ToolCommandName>
     <PackAsTool>True</PackAsTool>

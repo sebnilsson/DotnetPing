@@ -28,7 +28,7 @@ public static class ConsoleResultsWriter
 
     private static void WriteResultsTables(PingResults results, PingContext context)
     {
-        if (results.All.Length == 0)
+        if (results.All.Length <= 1)
         {
             return;
         }
@@ -57,6 +57,8 @@ public static class ConsoleResultsWriter
             AnsiConsole.Write(header);
         }
 
+        var pingSuffix = results.All.Length > 1 ? "s" : string.Empty;
+
         var resultTypeText = results.ResultType switch
         {
             PingResultType.Success => "succeeded",
@@ -68,7 +70,7 @@ public static class ConsoleResultsWriter
         var resultColor = ConsoleColor.GetFromResultType(results.ResultType);
 
         var summaryText = new Text(
-            $"Ping(s) {resultTypeText} in {resultsTimer.Elapsed.TotalSeconds:##0.00}s",
+            $"Ping{pingSuffix} {resultTypeText} in {resultsTimer.Elapsed.TotalSeconds:##0.00}s",
             new Style(resultColor, decoration: Decoration.Bold));
 
         if (!context.UseDebug && !context.UseMinimal)
@@ -78,6 +80,11 @@ public static class ConsoleResultsWriter
 
         AnsiConsole.Write(summaryText);
         AnsiConsole.WriteLine();
+
+        if (results.All.Length <= 1)
+        {
+            return;
+        }
 
         var prefix = !context.UseMinimal ? "    " : string.Empty;
         var separator = !context.UseMinimal ? string.Empty : ", ";

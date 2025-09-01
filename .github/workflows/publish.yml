@@ -1,16 +1,21 @@
 # yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
 
-name: Publish to NuGet
+name: CI/CD
 on:
   workflow_dispatch: # Allow running the workflow manually from the GitHub UI
   push:
     branches:
       - 'main'       # Run the workflow when pushing to the main branch
+      - 'develop'    # Also run on develop, but skip publishing
+  pull_request:
+    branches:
+      - 'main'       # Run tests on PRs targeting main
+      - 'develop'    # Run tests on PRs targeting develop
 
 env:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
   DOTNET_NOLOGO: true
-  NuGetDirectory: ${{ github.workspace}}/.nuget
+  NuGetDirectory: ${{ github.workspace}}/artifacts
 
 jobs:
   publish:
@@ -36,4 +41,5 @@ jobs:
       run: dotnet pack  --configuration Release --no-restore --output ${{ env.NuGetDirectory }}
 
     - name: Publish NuGet package
+      if: github.event_name == 'push' && github.ref_name == 'main'
       run: dotnet nuget push ${{ env.NuGetDirectory }}/*.nupkg  --api-key ${{ secrets.NUGET_APIKEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate

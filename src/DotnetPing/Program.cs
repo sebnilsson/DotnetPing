@@ -8,6 +8,11 @@ Console.CancelKeyPress += OnCancelKeyPress;
 var app = new CommandApp<AppCommand>();
 app.Configure(AppConfig);
 
+if (args.Length == 0)
+{
+    return app.Run(["--help"]);
+}
+
 try
 {
     return app.Run(args);

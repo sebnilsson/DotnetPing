@@ -30,6 +30,11 @@ public class FileConfigReader : IConfigReader
 
     private static async Task<FileConfigJson> ReadInternal(string filePath, PingContextOptions? options)
     {
+        if (!File.Exists(filePath))
+        {
+            return new FileConfigJson();
+        }
+
         using FileStream fileStream = new(filePath, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 4096, useAsync: true);
 
         options?.OnReaderRead?.Invoke(filePath);

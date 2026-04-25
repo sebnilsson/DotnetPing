@@ -2,8 +2,12 @@
 using DotnetPing;
 using Spectre.Console;
 using Spectre.Console.Cli;
+using DotnetPing.Instrumentation;
 
 Console.CancelKeyPress += OnCancelKeyPress;
+
+// Start minimal OpenTelemetry before app starts
+using var _otel = AientOpenTelemetry.Start();
 
 var app = new CommandApp<AppCommand>();
 app.Configure(AppConfig);

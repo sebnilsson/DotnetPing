@@ -4,6 +4,10 @@ namespace DotnetPing.Tests.Ping;
 
 public class UrlConfigTest
 {
+    public UrlConfigTest()
+    {
+        DotnetPing.Tests.Instrumentation.TelemetryInitializer.EnsureInitialized();
+    }
     [Theory]
     [InlineData("https://learn.microsoft.com/", "/dotnet/", "https://learn.microsoft.com/dotnet/")]
     [InlineData("", "dot.net", "https://dot.net")]

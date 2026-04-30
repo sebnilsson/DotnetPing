@@ -1,0 +1,25 @@
+<Solution>
+  <Folder Name="/github/">
+    <File Path=".github/workflows/ci.yml" />
+    <File Path=".github/workflows/publish.yml" />
+  </Folder>
+  <Folder Name="/github/dotnet-build-test/">
+    <File Path=".github/actions/dotnet-build-test/action.yml" />
+  </Folder>
+  <Folder Name="/solution-files/">
+    <File Path=".editorconfig" />
+    <File Path=".gitattributes" />
+    <File Path=".gitignore" />
+    <File Path="AGENTS.md" />
+    <File Path="Directory.Packages.props" />
+    <File Path="global.json" />
+    <File Path="README.md" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/DotnetPing/DotnetPing.csproj" />
+  </Folder>
+  <Folder Name="/test/">
+    <File Path="test/Directory.Packages.props" />
+    <Project Path="test/DotnetPing.Tests/DotnetPing.Tests.csproj" />
+  </Folder>
+</Solution>

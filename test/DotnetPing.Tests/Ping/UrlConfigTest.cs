@@ -19,4 +19,16 @@ public class UrlConfigTest
         // Assert
         Assert.Equal(expected, urlConfig.Url.Value);
     }
+
+    [Fact]
+    public void Method_IsResolvedThroughHttpMethodResolver()
+    {
+        // Arrange
+
+        // Act
+        var urlConfig = new UrlConfig("https://example.com", "delete", new Config());
+
+        // Assert
+        Assert.Equal(HttpMethod.Delete, urlConfig.Method);
+    }
 }

@@ -45,16 +45,16 @@ public record FileConfigJson
         {
             foreach (var url in group.Urls ?? [])
             {
-                var config = GetConfig(group);
+                var config = GetConfig(group, group.BaseUrl);
                 yield return new UrlConfig(url, group.Method, config);
             }
         }
     }
 
-    private static Config GetConfig(JsonBase jsonBase)
+    private static Config GetConfig(JsonBase jsonBase, string? baseUrl = null)
     {
         return new(
-            baseUrl: string.Empty,
+            baseUrl: baseUrl,
             sleep: jsonBase.Sleep,
             timeout: jsonBase.Timeout,
             expectedStatusCodes: jsonBase.Expect);

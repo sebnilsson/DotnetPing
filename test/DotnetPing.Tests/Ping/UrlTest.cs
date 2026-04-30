@@ -10,8 +10,12 @@ public class UrlTest
     [InlineData("   ")]
     public void EmptyOrWhitespace_ProducesEmptyValue(string? input)
     {
+        // Arrange
+
+        // Act
         var url = new Url(input);
 
+        // Assert
         Assert.Equal(string.Empty, url.Value);
         Assert.False(url.HasValue);
     }
@@ -22,8 +26,12 @@ public class UrlTest
     [InlineData("https://sub.example.com:8443/x")]
     public void AbsoluteUrl_IsReturnedUnchanged(string input)
     {
+        // Arrange
+
+        // Act
         var url = new Url(input);
 
+        // Assert
         Assert.Equal(input, url.Value);
         Assert.True(url.HasValue);
     }
@@ -33,17 +41,25 @@ public class UrlTest
     [InlineData("sub.example.com/path", "https://sub.example.com/path")]
     public void BareHost_GetsHttpsScheme(string input, string expected)
     {
+        // Arrange
+
+        // Act
         var url = new Url(input);
 
+        // Assert
         Assert.Equal(expected, url.Value);
     }
 
     [Fact]
     public void RelativePath_WithoutBase_ProducesEmptyValueWhenMalformed()
     {
+        // Arrange
+
         // "/dotnet" alone is not a well-formed absolute URL, even with the https:// prefix attempt
+        // Act
         var url = new Url("/dotnet");
 
+        // Assert
         Assert.Equal(string.Empty, url.Value);
     }
 
@@ -54,23 +70,37 @@ public class UrlTest
     [InlineData("https://learn.microsoft.com/", "/dotnet/csharp", "https://learn.microsoft.com/dotnet/csharp")]
     public void RelativePath_WithBase_IsCombinedAndNormalised(string baseUrl, string path, string expected)
     {
+        // Arrange
+
+        // Act
         var url = new Url(path, new Url(baseUrl));
 
+        // Assert
         Assert.Equal(expected, url.Value);
     }
 
     [Fact]
     public void AbsoluteUrl_IgnoresBase()
     {
+        // Arrange
+
+        // Act
         var url = new Url("https://other.example.com/x", new Url("https://learn.microsoft.com/"));
 
+        // Assert
         Assert.Equal("https://other.example.com/x", url.Value);
     }
 
     [Fact]
     public void Empty_StaticInstance_HasNoValue()
     {
-        Assert.Equal(string.Empty, Url.Empty.Value);
-        Assert.False(Url.Empty.HasValue);
+        // Arrange
+
+        // Act
+        var url = Url.Empty;
+
+        // Assert
+        Assert.Equal(string.Empty, url.Value);
+        Assert.False(url.HasValue);
     }
 }

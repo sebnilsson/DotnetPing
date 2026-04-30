@@ -9,7 +9,7 @@ public static class HttpMethodResolver
             return HttpMethod.Get;
         }
 
-        switch (method.ToLowerInvariant())
+        switch (method.Trim().ToLowerInvariant())
         {
             case "post":
                 return HttpMethod.Post;

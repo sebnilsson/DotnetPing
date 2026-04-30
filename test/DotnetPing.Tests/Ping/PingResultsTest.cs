@@ -21,8 +21,12 @@ public class PingResultsTest
     [Fact]
     public void Empty_ReportsNone()
     {
+        // Arrange
+
+        // Act
         var results = PingResults.Empty;
 
+        // Assert
         Assert.Empty(results.All);
         Assert.Empty(results.Successes);
         Assert.Empty(results.Failures);
@@ -33,8 +37,12 @@ public class PingResultsTest
     [Fact]
     public void AllSuccess_ReportsSuccess()
     {
+        // Arrange
+
+        // Act
         var results = new PingResults([CreateResult(PingResultType.Success), CreateResult(PingResultType.Success)]);
 
+        // Assert
         Assert.Equal(2, results.Successes.Length);
         Assert.Empty(results.Failures);
         Assert.Empty(results.Timeouts);
@@ -44,6 +52,9 @@ public class PingResultsTest
     [Fact]
     public void AnyFailure_ReportsFailure_EvenWithSuccessesAndTimeouts()
     {
+        // Arrange
+
+        // Act
         var results = new PingResults(
         [
             CreateResult(PingResultType.Success),
@@ -51,6 +62,7 @@ public class PingResultsTest
             CreateResult(PingResultType.Timeout),
         ]);
 
+        // Assert
         Assert.Single(results.Successes);
         Assert.Single(results.Failures);
         Assert.Single(results.Timeouts);
@@ -60,12 +72,16 @@ public class PingResultsTest
     [Fact]
     public void TimeoutWithoutFailure_ReportsTimeout()
     {
+        // Arrange
+
+        // Act
         var results = new PingResults(
         [
             CreateResult(PingResultType.Success),
             CreateResult(PingResultType.Timeout),
         ]);
 
+        // Assert
         Assert.Equal(PingResultType.Timeout, results.ResultType);
     }
 }

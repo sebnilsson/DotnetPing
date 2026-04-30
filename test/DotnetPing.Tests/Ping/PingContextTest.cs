@@ -7,6 +7,7 @@ public class PingContextTest
     [Fact]
     public void Construction_FiltersOutEmptyUrls()
     {
+        // Arrange
         var config = new Config();
         var urls = new[]
         {
@@ -15,8 +16,10 @@ public class PingContextTest
             new UrlConfig("   ", "GET", config),    // whitespace -> filtered
         };
 
+        // Act
         var context = new PingContext(urls, useMinimal: false, useDebug: false);
 
+        // Assert
         var only = Assert.Single(context.Urls);
         Assert.Equal("https://example.com", only.Url.Value);
     }
@@ -24,6 +27,7 @@ public class PingContextTest
     [Fact]
     public void Construction_DeduplicatesByUrlAndMethod()
     {
+        // Arrange
         var config = new Config();
         var urls = new[]
         {
@@ -33,8 +37,10 @@ public class PingContextTest
             new UrlConfig("https://other.example.com", "GET", config),
         };
 
+        // Act
         var context = new PingContext(urls, useMinimal: false, useDebug: false);
 
+        // Assert
         Assert.Equal(3, context.Urls.Length);
     }
 }

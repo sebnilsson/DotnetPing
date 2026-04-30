@@ -10,18 +10,25 @@ public class UrlConfigTest
     [InlineData("https://learn.microsoft.com/", "", "")]
     public void BaseUrl_ReturnsFullUrl(string baseUrl, string url, string expected)
     {
+        // Arrange
         var config = new Config(baseUrl: baseUrl);
 
+        // Act
         var urlConfig = new UrlConfig(url, AppSettings.DefaultMethod, config);
 
+        // Assert
         Assert.Equal(expected, urlConfig.Url.Value);
     }
 
     [Fact]
     public void Method_IsResolvedThroughHttpMethodResolver()
     {
+        // Arrange
+
+        // Act
         var urlConfig = new UrlConfig("https://example.com", "delete", new Config());
 
+        // Assert
         Assert.Equal(HttpMethod.Delete, urlConfig.Method);
     }
 }

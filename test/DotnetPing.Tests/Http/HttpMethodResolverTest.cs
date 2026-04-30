@@ -12,10 +12,15 @@ public class HttpMethodResolverTest
     [InlineData("PATCH", "PATCH")]
     [InlineData("head", "HEAD")]
     [InlineData("options", "OPTIONS")]
+    [InlineData(" get ", "GET")]
     public void Get_KnownMethods_AreResolvedCaseInsensitively(string input, string expectedMethod)
     {
+        // Arrange
+
+        // Act
         var result = HttpMethodResolver.Get(input);
 
+        // Assert
         Assert.Equal(expectedMethod, result.Method);
     }
 
@@ -28,6 +33,12 @@ public class HttpMethodResolverTest
     [InlineData("trace")]
     public void Get_UnknownOrEmpty_FallsBackToGet(string? input)
     {
-        Assert.Equal(HttpMethod.Get, HttpMethodResolver.Get(input));
+        // Arrange
+
+        // Act
+        var result = HttpMethodResolver.Get(input);
+
+        // Assert
+        Assert.Equal(HttpMethod.Get, result);
     }
 }

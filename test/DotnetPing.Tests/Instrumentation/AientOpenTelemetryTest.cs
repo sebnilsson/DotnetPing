@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using DotnetPing.Instrumentation;
+using OpenTelemetry.Trace;
 
 namespace DotnetPing.Tests.Instrumentation;
 

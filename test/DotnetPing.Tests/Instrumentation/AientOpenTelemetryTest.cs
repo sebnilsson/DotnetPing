@@ -136,15 +136,26 @@ public class AientOpenTelemetryTest
     {
         public ConcurrentQueue<ExportedRequest> Requests { get; } = new();
 
+        protected override HttpResponseMessage Send(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            var body = request.Content!.ReadAsByteArrayAsync(cancellationToken).GetAwaiter().GetResult();
+            return Capture(request, body);
+        }
+
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            var content = request.Content!;
+            var body = await request.Content!.ReadAsByteArrayAsync(cancellationToken);
+            return Capture(request, body);
+        }
+
+        private HttpResponseMessage Capture(HttpRequestMessage request, byte[] body)
+        {
             Requests.Enqueue(new ExportedRequest(
                 request.RequestUri,
-                content.Headers.ContentType?.MediaType,
+                request.Content!.Headers.ContentType?.MediaType,
                 request.Headers.GetValues("x-aient-org-id").Single(),
                 request.Headers.GetValues("x-aient-publishable-key").Single(),
-                await content.ReadAsByteArrayAsync(cancellationToken)));
+                body));
             return new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent([]) };
         }
     }

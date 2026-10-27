@@ -60,3 +60,8 @@ jobs:
         dotnet test test/DotnetPing.Tests/DotnetPing.Tests.csproj
         --configuration Release
         --filter "FullyQualifiedName~DotnetPing.Tests.Instrumentation"
+
+    - name: Check telemetry formatting
+      run: >
+        dotnet format DotnetPing.slnx --no-restore --verify-no-changes
+        --include src/DotnetPing/Instrumentation test/DotnetPing.Tests/Instrumentation

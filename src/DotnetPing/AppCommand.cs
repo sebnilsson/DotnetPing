@@ -9,9 +9,10 @@ namespace DotnetPing;
 
 public sealed class AppCommand : AsyncCommand<AppSettings>
 {
-    public override async Task<int> ExecuteAsync(
+    protected override async Task<int> ExecuteAsync(
         [NotNull] CommandContext commandContext,
-        [NotNull] AppSettings settings)
+        [NotNull] AppSettings settings,
+        CancellationToken cancellationToken)
     {
         var services = GetServices(settings);
 

@@ -1,21 +1,33 @@
 # yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
 
-name: CI/CD
+name: Publish to NuGet
+
 on:
-  workflow_dispatch: # Allow running the workflow manually from the GitHub UI
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'SemVer package version, with or without v prefix.'
+        required: true
+        type: string
   push:
-    branches:
-      - 'main'       # Run the workflow when pushing to the main branch
-      - 'develop'    # Also run on develop, but skip publishing
-  pull_request:
-    branches:
-      - 'main'       # Run tests on PRs targeting main
-      - 'develop'    # Run tests on PRs targeting develop
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
   DOTNET_NOLOGO: true
-  NuGetDirectory: ${{ github.workspace}}/artifacts
+  NuGetDirectory: ${{ github.workspace }}/nuget
+
+defaults:
+  run:
+    shell: pwsh
 
 jobs:
   publish:
@@ -23,23 +35,56 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
-      
+      uses: actions/checkout@v6
+
     - name: Setup .NET
-      uses: actions/setup-dotnet@v4
+      uses: actions/setup-dotnet@v5
+      with:
+        global-json-file: global.json
+        dotnet-version: 9.0.x
 
-    - name: Restore dependencies
-      run: dotnet restore
+    - name: Resolve Package Version
+      id: version
+      env:
+        INPUT_VERSION: ${{ inputs.version }}
+      run: |
+        $rawVersion = if ($env:GITHUB_REF_TYPE -eq 'tag') { $env:GITHUB_REF_NAME } else { $env:INPUT_VERSION }
+        $versionPattern = '^(?:v)?(?<version>(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(?:-(?:(?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*)(?:\.(?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*))*))?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?)$'
 
-    - name: Build solution
-      run: dotnet build --configuration Release --no-restore
+        if ($env:GITHUB_REF_TYPE -eq 'tag' -and -not $rawVersion.StartsWith('v', [System.StringComparison]::Ordinal)) {
+          throw "Publish tags must use v-prefixed SemVer, for example v1.2.3. Got '$rawVersion'."
+        }
 
-    - name: Run tests
-      run: dotnet test --no-restore
-      
-    - name: Create NuGet package
-      run: dotnet pack  --configuration Release --no-restore --output ${{ env.NuGetDirectory }}
+        if ($rawVersion -notmatch $versionPattern) {
+          throw "Version '$rawVersion' is not valid SemVer. Use v1.2.3, v1.2.3-beta.1, or v1.2.3+build.5."
+        }
 
-    - name: Publish NuGet package
-      if: github.event_name == 'push' && github.ref_name == 'main'
-      run: dotnet nuget push ${{ env.NuGetDirectory }}/*.nupkg  --api-key ${{ secrets.NUGET_APIKEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+        $packageVersion = $Matches['version']
+        "PackageVersion=$packageVersion" >> $env:GITHUB_ENV
+        "package-version=$packageVersion" >> $env:GITHUB_OUTPUT
+        "Resolved package version: $packageVersion" >> $env:GITHUB_STEP_SUMMARY
+
+    - name: .NET Build and Test
+      uses: ./.github/actions/dotnet-build-test
+      with:
+        msbuild-properties: >
+          -p:Version=${{ steps.version.outputs.package-version }}
+          -p:PackageVersion=${{ steps.version.outputs.package-version }}
+          -p:InformationalVersion=${{ steps.version.outputs.package-version }}
+          -p:ContinuousIntegrationBuild=true
+
+    - name: .NET Pack
+      run: >
+        dotnet pack src/DotnetPing/DotnetPing.csproj
+        --no-restore
+        --no-build
+        --configuration Release
+        --output ${{ env.NuGetDirectory }}
+        -p:Version=$env:PackageVersion
+        -p:PackageVersion=$env:PackageVersion
+        -p:InformationalVersion=$env:PackageVersion
+        -p:ContinuousIntegrationBuild=true
+
+    - name: NuGet Push
+      run: dotnet nuget push ${{ env.NuGetDirectory }}/*.nupkg --api-key ${{ secrets.NUGET_APIKEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+

@@ -1,36 +1,57 @@
-using System;
 using OpenTelemetry;
+using OpenTelemetry.Exporter;
+using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 
-namespace DotnetPing.Instrumentation
+namespace DotnetPing.Instrumentation;
+
+internal static class AientOpenTelemetry
 {
-    internal static class AientOpenTelemetry
+    public static TracerProvider? Start(Action<string>? reportWarning = null)
     {
-        public static TracerProvider? Start()
+        return Start(Environment.GetEnvironmentVariable, reportWarning);
+    }
+
+    internal static TracerProvider? Start(
+        Func<string, string?> getEnvironmentVariable,
+        Action<string>? reportWarning = null,
+        Func<HttpClient>? exporterHttpClientFactory = null)
+    {
+        var settings = AientTelemetrySettings.Read(getEnvironmentVariable, out var warning);
+        if (warning is not null)
         {
-            var orgId = Environment.GetEnvironmentVariable("AIENT_ORG_ID") ?? "57b0ff8b-15a4-4fb6-af4f-e36a5e636097";
-            var publishableKey = Environment.GetEnvironmentVariable("AIENT_PUBLISHABLE_KEY") ?? "pk_live_db7c2339aa8948e5b9f2882703d91960";
+            reportWarning?.Invoke(warning);
+        }
 
-            // Minimal OpenTelemetry tracer provider. Exporter: OTLP over HTTP to Aient ingest endpoint.
-            // Aient recommends using their runtime SDK, but to avoid inventing package names we use generic OTLP exporter
-            // and configure endpoint via environment variable. Users can set AIENT_OTLP_ENDPOINT if needed.
+        if (settings is null)
+        {
+            return null;
+        }
 
-            var endpoint = Environment.GetEnvironmentVariable("AIENT_OTLP_ENDPOINT") ?? "https://ingest.aient.dev/v1/traces";
-
-            var provider = Sdk.CreateTracerProviderBuilder()
+        try
+        {
+            return Sdk.CreateTracerProviderBuilder()
                 .AddSource("DotnetPing")
-                .SetResourceBuilder(OpenTelemetry.Resources.ResourceBuilder.CreateDefault().AddService("dotnet-ping"))
+                .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("dotnet-ping"))
                 .AddHttpClientInstrumentation()
-                .AddAspNetCoreInstrumentation()
                 .AddOtlpExporter(options =>
                 {
-                    options.Endpoint = new Uri(endpoint);
-                    // Pass org and publishable key as headers if exporter supports it
-                    options.Headers = $"x-aient-org-id={orgId},x-aient-publishable-key={publishableKey}";
+                    options.Protocol = OtlpExportProtocol.HttpProtobuf;
+                    options.Endpoint = settings.Endpoint;
+                    options.Headers = $"x-aient-org-id={settings.OrganizationId},x-aient-publishable-key={settings.PublishableKey}";
+                    options.TimeoutMilliseconds = 1_000;
+                    if (exporterHttpClientFactory is not null)
+                    {
+                        options.HttpClientFactory = exporterHttpClientFactory;
+                    }
                 })
                 .Build();
-
-            return provider;
+        }
+        catch (Exception)
+        {
+            // Telemetry is optional. SDK errors must not break ping or expose configuration values.
+            reportWarning?.Invoke("Aient telemetry disabled: OpenTelemetry initialization failed.");
+            return null;
         }
     }
 }

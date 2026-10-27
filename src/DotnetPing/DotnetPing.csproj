@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net9.0;net8.0</TargetFrameworks>
+    <TargetFrameworks>net9.0;net10.0</TargetFrameworks>
     <IsPackable>true</IsPackable>
     <OutputType>Exe</OutputType>
 
@@ -12,8 +12,6 @@
     <Title>Dotnet Ping</Title>
     <AssemblyName>dotnet-ping</AssemblyName>
     <PackageId>dotnet-ping</PackageId>
-    <PackageVersion>$(Version)</PackageVersion>
-    <Version>0.5.6</Version>
 
     <ToolCommandName>dotnet-ping</ToolCommandName>
     <PackAsTool>True</PackAsTool>
@@ -34,6 +32,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="DotnetPing.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Include="..\..\README.md">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
@@ -41,13 +43,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.8" />
-    <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.8" />
-    <PackageReference Include="Spectre.Console.Cli" Version="0.50.0" />
-    <PackageReference Include="Spectre.Console.Json" Version="0.50.0" />
-    <PackageReference Include="OpenTelemetry" Version="1.5.0-rc.1" />
-    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.5.0-rc.1" />
-    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.5.0-rc.1" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Microsoft.Extensions.Http" />
+    <PackageReference Include="OpenTelemetry" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Http" />
+    <PackageReference Include="Spectre.Console.Cli" />
+    <PackageReference Include="Spectre.Console.Json" />
   </ItemGroup>
 
 </Project>
+
